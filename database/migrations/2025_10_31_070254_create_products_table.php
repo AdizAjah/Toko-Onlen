@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            // Gunakan decimal untuk harga agar presisi
+            $table->decimal('price', 10, 2);
+            $table->string('image_url')->nullable(); // Sederhana, kita simpan URL gambar saja
             $table->timestamps();
         });
     }
