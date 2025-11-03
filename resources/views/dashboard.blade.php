@@ -6,7 +6,11 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <!-- 
+            MODIFIKASI: 
+            - Menambahkan 'px-4' untuk padding horizontal di layar mobile 
+        -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- Tampilan Dashboard Admin -->
             @if(Auth::user()->role == 'admin')
@@ -20,7 +24,11 @@
 
                 <!-- Box Konten Atas (Filter) -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6 text-gray-900">
+                    <!-- 
+                        MODIFIKASI: 
+                        - Padding 'p-4' di mobile, 'sm:p-6' di layar lebih besar
+                    -->
+                    <div class="p-4 sm:p-6 text-gray-900">
 
                         <!-- Notifikasi Sukses (jika ada) -->
                         @if (session('success'))
@@ -30,7 +38,8 @@
                         @endif
 
                         <!-- FORM FILTER UTAMA -->
-                        <form action="{{ route('dashboard') }}" method="GET" class="space-y-6">
+                        <!-- MODIFIKASI RESPONSIF: 'space-y-4 sm:space-y-6' -->
+                        <form action="{{ route('dashboard') }}" method="GET" class="space-y-4 sm:space-y-6">
                             <!-- Bawa parameter kategori jika ada -->
                             @if($selectedCategory)
                                 <input type="hidden" name="category_id" value="{{ $selectedCategory }}">
@@ -41,7 +50,7 @@
                                 <label for="search" class="block text-sm font-medium text-gray-700">Cari Produk</label>
                                 <input type="text" name="search" id="search" 
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                       placeholder="Nama produk, deskripsi, atau kategori..."
+                                       placeholder="Nama produk, deskripsi..."
                                        value="{{ $search ?? '' }}">
                             </div>
 
@@ -77,27 +86,30 @@
 
                         <hr class="my-6 border-gray-200">
 
-                        <!-- Filter Kategori (Link dimodifikasi agar menyimpan filter lain) -->
-                        <h3 class="text-xl font-semibold mb-4">Telusuri Kategori</h3>
-                        <div class="flex flex-wrap gap-3">
+                        <!-- Filter Kategori -->
+                        <h3 class="text-lg sm:text-xl font-semibold mb-4">Telusuri Kategori</h3>
+                        <!-- MODIFIKASI RESPONSIF: 'gap-2' -->
+                        <div class="flex flex-wrap gap-2">
                             
-                            <!-- Tombol "Semua Kategori" (Menghapus 'category_id' tapi menyimpan filter lain) -->
+                            <!-- Tombol "Semua Kategori" -->
                             @php
                                 $queryAll = request()->query(); // Ambil query string saat ini
                                 unset($queryAll['category_id']); // Hapus filter kategori
                             @endphp
+                            <!-- MODIFIKASI RESPONSIF: padding 'px-3 py-1.5 text-xs' dan 'sm:px-4 sm:py-2 sm:text-sm' -->
                             <a href="{{ route('dashboard', $queryAll) }}" 
-                               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150
+                               class="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm rounded-lg font-medium transition-colors duration-150
                                       {{ !$selectedCategory ? 
                                          'bg-indigo-600 text-white shadow' : 
                                          'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                                 Semua
                             </a>
 
-                            <!-- Loop Kategori (Menambahkan 'category_id' dan menyimpan filter lain) -->
+                            <!-- Loop Kategori -->
                             @foreach ($categories as $category)
+                                <!-- MODIFIKASI RESPONSIF: padding 'px-3 py-1.5 text-xs' dan 'sm:px-4 sm:py-2 sm:text-sm' -->
                                 <a href="{{ route('dashboard', array_merge(request()->query(), ['category_id' => $category->id])) }}"
-                                   class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150
+                                   class="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm rounded-lg font-medium transition-colors duration-150
                                           {{ $selectedCategory == $category->id ? 
                                              'bg-indigo-600 text-white shadow' : 
                                              'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
@@ -109,7 +121,11 @@
                 </div>
                 
                 <!-- Judul "Produk Kami" -->
-                <h3 class="text-2xl font-semibold mb-4 text-gray-800 px-1 sm:px-0">
+                <!-- 
+                    MODIFIKASI: 
+                    - Menghapus 'px-1 sm:px-0' karena padding sudah dihandle parent
+                -->
+                <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">
                     @if ($selectedCategory)
                         Menampilkan Produk: {{ $categories->find($selectedCategory)->name }}
                     @elseif ($search)
@@ -120,13 +136,20 @@
                 </h3>
 
                 <!-- Grid Produk -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- 
+                    MODIFIKASI RESPONSIF: 
+                    - 'grid-cols-2' (menjadi 2 kolom di HP)
+                    - 'md:grid-cols-3' (menjadi 3 kolom di tablet)
+                    - 'gap-4 md:gap-6' (gap lebih kecil di HP)
+                -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     @forelse ($products as $product)
                         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col relative group transition-shadow duration-150 hover:shadow-lg">
                             
-                            <!-- Tanda Stok Habis (Absolute) -->
+                            <!-- Tanda Stok Habis -->
                             @if($product->quantity <= 0)
-                                <span class="absolute top-3 right-3 z-20 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase">
+                                <!-- MODIFIKASI RESPONSIF: 'text-[10px] px-2 py-0.5' dan 'sm:text-xs sm:px-3 sm:py-1' -->
+                                <span class="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 bg-red-600 text-white text-[10px] px-2 py-0.5 sm:text-xs sm:px-3 sm:py-1 rounded-full uppercase font-semibold">
                                     Stok Habis
                                 </span>
                             @endif
@@ -139,27 +162,31 @@
                                 <img src="{{ $product->image_url ?? 'https://placehold.co/600x400/EEE/31343C?text=Produk' }}"
                                      alt="{{ $product->name }}"
                                      class="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105
-                                            @if($product->quantity <= 0) opacity-60 @endif"> <!-- Efek Redup jika stok habis -->
+                                            @if($product->quantity <= 0) opacity-60 @endif">
                             </div>
 
                             <!-- Detail Produk -->
-                            <div class="p-4 flex flex-col flex-grow">
-                                <h3 class="text-sm text-gray-500 mb-1">
+                            <!-- MODIFIKASI RESPONSIF: 'p-3 sm:p-4' -->
+                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                                <!-- MODIFIKASI RESPONSIF: 'text-xs sm:text-sm' -->
+                                <h3 class="text-xs sm:text-sm text-gray-500 mb-1">
                                     {{ $product->category->name ?? 'Tanpa Kategori' }}
                                 </h3>
-                                <h4 class="text-md font-semibold text-gray-900 truncate">
+                                <!-- MODIFIKASI RESPONSIF: 'text-sm sm:text-md' -->
+                                <h4 class="text-sm sm:text-md font-semibold text-gray-900 truncate">
                                     {{ $product->name }}
                                 </h4>
-                                <p class="mt-2 text-lg font-bold text-gray-800">
+                                <!-- MODIFIKASI RESPONSIF: 'text-base sm:text-lg' -->
+                                <p class="mt-2 text-base sm:text-lg font-bold text-gray-800">
                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                 </p>
                                 
                                 <!-- TAMPILAN STOK BARU -->
-                                <p class="mt-2 text-xs font-medium {{ $product->quantity > 10 ? 'text-green-600' : 'text-yellow-600' }}">
+                                <p class="mt-1 sm:mt-2 text-xs font-medium {{ $product->quantity > 10 ? 'text-green-600' : 'text-yellow-600' }}">
                                     @if($product->quantity > 0)
                                         Stok Tersisa: {{ $product->quantity }}
                                     @else
-                                        <!-- Ini tidak akan terlihat karena ada badge "Stok Habis" -->
+                                        <!-- (Badge "Stok Habis" sudah menutupi ini) -->
                                     @endif
                                 </p>
                             </div>
@@ -178,5 +205,4 @@
         </div>
     </div>
 </x-app-layout>
-
 
