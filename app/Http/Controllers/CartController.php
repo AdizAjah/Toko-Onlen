@@ -2,76 +2,82 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
     /**
-     * Menampilkan halaman keranjang belanja user.
+     * Display a listing of the resource.
      */
     public function index()
     {
-        $user_id = Auth::id();
-        
-        // Ambil item keranjang milik user, beserta data produk terkait
-        $cartItems = Cart::where('user_id', $user_id)
-                         ->with('product') // Eager load relasi product
+        // Ambil item keranjang milik user yang sedang login
+        // 'with' digunakan untuk Eager Loading relasi produk, agar lebih efisien
+        $cartItems = Cart::where('user_id', Auth::id())
+                         ->with('product') // Pastikan relasi 'product' ada di model Cart
                          ->get();
-
-        // Hitung total harga
-        $totalPrice = $cartItems->sum(function ($item) {
-            return $item->product->price * $item->quantity;
-        });
         
-        // Buat folder 'cart' di dalam 'resources/views'
+        // MODIFIKASI: Hitung total harga
+        $totalPrice = 0;
+        foreach ($cartItems as $item) {
+            // Pastikan produk ada untuk menghindari error jika produk dihapus
+            if ($item->product) {
+                $totalPrice += $item->quantity * $item->product->price;
+            }
+        }
+
+        // Kirim data ke view, tambahkan $totalPrice
         return view('cart.index', compact('cartItems', 'totalPrice'));
     }
 
     /**
-     * Menyimpan produk ke keranjang.
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1' // Validasi quantity
         ]);
 
-        $user_id = Auth::id();
-        $product_id = $request->product_id;
-        $quantity = $request->input('quantity', 1); // Default quantity 1
+        $product = Product::find($request->product_id);
+        $user = Auth::user();
 
         // Cek apakah produk sudah ada di keranjang user
-        $existingItem = Cart::where('user_id', $user_id)
-                            ->where('product_id', $product_id)
-                            ->first();
+        $cartItem = Cart::where('user_id', $user->id)
+                        ->where('product_id', $product->id)
+                        ->first();
 
-        if ($existingItem) {
+        if ($cartItem) {
             // Jika sudah ada, tambahkan quantity-nya
-            $existingItem->quantity += $quantity;
-            $existingItem->save();
+            $cartItem->quantity += $request->quantity;
+            $cartItem->save();
         } else {
-            // Jika belum ada, buat entri baru
+            // Jika belum ada, buat item baru
             Cart::create([
-                'user_id' => $user_id,
-                'product_id' => $product_id,
-                'quantity' => $quantity,
+                'user_id' => $user->id,
+                'product_id' => $product->id,
+                'quantity' => $request->quantity // Simpan quantity
             ]);
         }
 
-        return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan ke keranjang.');
+        // MODIFIKASI:
+        // Ganti redirect ke halaman keranjang, menjadi kembali ke halaman sebelumnya.
+        // Pesan 'success' akan otomatis tampil sebagai "pop up" notifikasi.
+        return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
     }
 
     /**
-     * Menghapus item dari keranjang.
+     * Remove the specified resource from storage.
      */
     public function destroy(Cart $cart)
     {
-        // Pastikan user hanya bisa menghapus item miliknya sendiri
+        // Otorisasi: Pastikan user hanya bisa menghapus item keranjangnya sendiri
         if ($cart->user_id !== Auth::id()) {
-            return abort(403, 'Aksi tidak diizinkan.');
+            return redirect()->back()->with('error', 'Anda tidak diizinkan melakukan ini.');
         }
 
         $cart->delete();
@@ -79,3 +85,4 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Produk berhasil dihapus dari keranjang.');
     }
 }
+
