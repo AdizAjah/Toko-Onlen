@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product; // Import model Product
+use App\Models\Product;
+use App\Models\Category; // Pastikan ini di-import
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -13,8 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
-        // Kita akan buat view ini nanti
+        $products = Product::with('category')->latest()->get();
         return view('admin.products.index', compact('products'));
     }
 
@@ -23,8 +23,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Kita akan buat view ini nanti
-        return view('admin.products.create');
+        $categories = Category::all();
+        return view('admin.products.create', compact('categories'));
     }
 
     /**
@@ -32,17 +32,18 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'image_url' => 'nullable|url', // Sederhana, pakai URL saja
+            'quantity' => 'required|integer|min:0', // <-- TAMBAHKAN VALIDASI INI
+            'category_id' => 'required|exists:categories,id',
+            'image_url' => 'nullable|url',
         ]);
 
-        Product::create($request->all());
+        Product::create($validated);
 
-        return redirect()->route('admin.products.index')
-                         ->with('success', 'Produk berhasil ditambahkan.');
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
     /**
@@ -50,8 +51,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        // Untuk e-commerce sederhana, halaman show di admin mungkin tidak perlu
-        // Kita bisa redirect ke halaman edit
+        // Biasanya tidak digunakan di admin CRUD, redirect ke edit
         return redirect()->route('admin.products.edit', $product);
     }
 
@@ -60,8 +60,8 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        // Kita akan buat view ini nanti
-        return view('admin.products.edit', compact('product'));
+        $categories = Category::all();
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
     /**
@@ -69,17 +69,18 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:0', // <-- TAMBAHKAN VALIDASI INI
+            'category_id' => 'required|exists:categories,id',
             'image_url' => 'nullable|url',
         ]);
 
-        $product->update($request->all());
+        $product->update($validated);
 
-        return redirect()->route('admin.products.index')
-                         ->with('success', 'Produk berhasil diperbarui.');
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui.');
     }
 
     /**
@@ -88,8 +89,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
-
-        return redirect()->route('admin.products.index')
-                         ->with('success', 'Produk berhasil dihapus.');
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
     }
 }
+

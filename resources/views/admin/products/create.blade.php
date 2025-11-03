@@ -10,52 +10,90 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
-                    <!-- Menampilkan Error Validasi -->
-                    @if ($errors->any())
-                        <div class="mb-4">
-                            <ul class="list-disc list-inside text-sm text-red-600">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
+                    <!-- Form -->
                     <form action="{{ route('admin.products.store') }}" method="POST">
                         @csrf
+                        <div class="space-y-6">
 
-                        <!-- Nama Produk -->
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700">Nama Produk</label>
-                            <input type="text" name="name" id="name" value="{{ old('name') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                        </div>
+                            <!-- Nama Produk -->
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Nama Produk</label>
+                                <input type="text" name="name" id="name" value="{{ old('name') }}" required
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('name') border-red-500 @enderror">
+                                @error('name')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                        <!-- Deskripsi -->
-                        <div class="mt-4">
-                            <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                            <textarea name="description" id="description" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ old('description') }}</textarea>
-                        </div>
+                            <!-- Kategori -->
+                            <div>
+                                <label for="category_id" class="block text-sm font-medium text-gray-700">Kategori</label>
+                                <select name="category_id" id="category_id" required
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('category_id') border-red-500 @enderror">
+                                    <option value="">Pilih Kategori</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                        <!-- Harga -->
-                        <div class="mt-4">
-                            <label for="price" class="block text-sm font-medium text-gray-700">Harga</label>
-                            <input type="number" name="price" id="price" value="{{ old('price') }}" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                        </div>
+                            <!-- Deskripsi -->
+                            <div>
+                                <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                                <textarea name="description" id="description" rows="4"
+                                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
+                                @error('description')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                        <!-- URL Gambar -->
-                        <div class="mt-4">
-                            <label for="image_url" class="block text-sm font-medium text-gray-700">URL Gambar (Opsional)</label>
-                            <input type="text" name="image_url" id="image_url" value="{{ old('image_url') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        </div>
+                            <!-- Harga -->
+                            <div>
+                                <label for="price" class="block text-sm font-medium text-gray-700">Harga (Rp)</label>
+                                <input type="number" name="price" id="price" value="{{ old('price') }}" required min="0"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('price') border-red-500 @enderror">
+                                @error('price')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                        <!-- Tombol Simpan -->
-                        <div class="mt-6 flex items-center justify-end">
-                            <a href="{{ route('admin.products.index') }}" class="text-gray-600 hover:text-gray-900 mr-4">
-                                Batal
-                            </a>
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                Simpan
-                            </button>
+                            <!-- ===== FIELD BARU: JUMLAH STOK ===== -->
+                            <div>
+                                <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah Stok</label>
+                                <input type="number" name="quantity" id="quantity" value="{{ old('quantity', 0) }}" required min="0"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('quantity') border-red-500 @enderror">
+                                @error('quantity')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <!-- ===== AKHIR FIELD BARU ===== -->
+
+                            <!-- Image URL -->
+                            <div>
+                                <label for="image_url" class="block text-sm font-medium text-gray-700">URL Gambar (Opsional)</label>
+                                <input type="url" name="image_url" id="image_url" value="{{ old('image_url') }}"
+                                       placeholder="https://example.com/image.png"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('image_url') border-red-500 @enderror">
+                                @error('image_url')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Tombol Submit -->
+                            <div class="flex justify-end space-x-4">
+                                <a href="{{ route('admin.products.index') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                                    Batal
+                                </a>
+                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                                    Simpan Produk
+                                </button>
+                            </div>
+
                         </div>
                     </form>
 
@@ -64,3 +102,4 @@
         </div>
     </div>
 </x-app-layout>
+

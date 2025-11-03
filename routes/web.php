@@ -2,26 +2,80 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Product;
+use App\Models\Category;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\CartController; // <-- IMPORT CartController
-use App\Models\Product; // <-- IMPORT Product Model
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\CartController;
+use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder; // <-- Pastikan import ini ada
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
 
 Route::get('/', function () {
-    // Arahkan halaman utama ke dashboard jika sudah login, atau ke login jika belum
-    if (Auth::check()) {
-        return redirect('/dashboard');
-    }
-    return view('auth.login');
+    return view('welcome');
 });
 
-// MODIFIKASI: Ubah route dashboard
-// Tidak lagi hanya menampilkan view, tapi juga mengambil data produk
-Route::get('/dashboard', function () {
-    // Ambil semua produk
-    $products = Product::all();
-    // Kirim data produk ke view dashboard
-    return view('dashboard', compact('products'));
+// Route Dashboard (Versi final dengan SEMUA filter)
+Route::get('/dashboard', function (Request $request) {
+    
+    $categories = Category::all(); // Ambil semua kategori
+    
+    // Ambil semua input filter
+    $selectedCategory = $request->query('category_id');
+    $search = $request->query('search');
+    $minPrice = $request->query('min_price');
+    $maxPrice = $request->query('max_price');
+
+    // Mulai query produk
+    $productsQuery = Product::query();
+
+    // 1. Filter by Kategori
+    if ($selectedCategory) {
+        $productsQuery->where('category_id', $selectedCategory);
+    }
+
+    // 2. Filter by Harga
+    if ($minPrice) {
+        $productsQuery->where('price', '>=', $minPrice);
+    }
+    if ($maxPrice) {
+        $productsQuery->where('price', '<=', $maxPrice);
+    }
+
+    // 3. Filter by Search (Nama, Deskripsi, ATAU Nama Kategori)
+    if ($search) {
+        $productsQuery->where(function (Builder $query) use ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('category', function (Builder $query) use ($search) {
+                      $query->where('name', 'like', "%{$search}%");
+                  });
+        });
+    }
+
+    // Ambil produk (setelah difilter atau semua)
+    $products = $productsQuery->latest()->get();
+
+    // Kirim data ke view
+    return view('dashboard', compact(
+        'products', 
+        'categories', 
+        'selectedCategory',
+        'search',       // Kirim nilai search kembali ke view
+        'minPrice',     // Kirim nilai minPrice kembali ke view
+        'maxPrice'      // Kirim nilai maxPrice kembali ke view
+    ));
+
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
@@ -30,29 +84,23 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // === RUTE KERANJANG (UNTUK USER) ===
+    // Rute untuk Keranjang (Cart)
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add', [CartController::class, 'store'])->name('cart.store');
-    Route::delete('/cart/item/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+    Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+
+    // Rute untuk Halaman Detail Produk
+    Route::get('/products/{product}', function (Product $product) {
+        return view('products.show', compact('product'));
+    })->name('products.show');
 });
 
-// === RUTE ADMIN UNTUK PRODUK ===
-// Kita kelompokkan rute admin di sini
-// 'prefix' => 'admin' -> URL akan menjadi /admin/products
-// 'name' => 'admin.' -> Nama rute akan menjadi admin.products.index
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Ini akan otomatis membuat rute untuk:
-    // index, create, store, show, edit, update, destroy
+// Grup Rute untuk Admin
+Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(function () {
     Route::resource('products', ProductController::class);
+    Route::resource('categories', CategoryController::class);
 });
 
-// === RUTE BARU UNTUK HALAMAN DETAIL PRODUK ===
-// Menggunakan Route Model Binding (Product $product) untuk otomatis fetch data
-Route::get('/products/{product}', function (Product $product) {
-    // Buat folder 'products' di 'resources/views'
-    return view('products.show', compact('product')); 
-})->middleware(['auth', 'verified'])->name('products.show');
-// ===============================================
 
 require __DIR__.'/auth.php';
 

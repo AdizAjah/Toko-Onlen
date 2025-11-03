@@ -16,27 +16,34 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <!-- === TAMBAHKAN LINK KERANJANG DI SINI === -->
-                    <!-- Tampilkan link keranjang HANYA untuk user biasa -->
-                    @if(Auth::user()->role == 'user')
-                    <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
-                        {{ __('Keranjang') }}
-                    </x-nav-link>
-                    @endif
-                    <!-- === AKHIR LINK KERANJANG === -->
-
-                    <!-- === LINK ADMIN (YANG SUDAH ADA) === -->
+                    <!-- Tampilkan link berdasarkan role -->
                     @if(Auth::user()->role == 'admin')
-                    <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                        {{ __('Kelola Produk') }}
-                    </x-nav-link>
+                        <!-- Link Admin -->
+                        <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
+                            {{ __('Kelola Produk') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                            {{ __('Kelola Kategori') }}
+                        </x-nav-link>
+                    @else
+                        <!-- Link User (Keranjang) -->
+                        <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
+                            {{ __('Keranjang') }}
+                            @php
+                                // Hitung item di keranjang
+                                $cartCount = \App\Models\Cart::where('user_id', Auth::id())->count();
+                            @endphp
+                            @if($cartCount > 0)
+                                <span class="ms-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full">
+                                    {{ $cartCount }}
+                                </span>
+                            @endif
+                        </x-nav-link>
                     @endif
-                    <!-- === AKHIR LINK ADMIN === -->
-
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
+            <!-- Settings Dropdown (Lengkap) -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -72,37 +79,49 @@
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <!-- ... (Kode hamburger menu yang sudah ada) ... -->
-<!-- ... existing code ... -->
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': !open}" class="hidden sm:hidden">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-            <!-- === TAMBAHKAN LINK KERANJANG (RESPONSIVE) === -->
-            @if(Auth::user()->role == 'user')
-            <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
-                {{ __('Keranjang') }}
-            </x-responsive-nav-link>
+            <!-- Tampilkan link berdasarkan role (Responsive) -->
+            @if(Auth::user()->role == 'admin')
+                <x-responsive-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
+                    {{ __('Kelola Produk') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                    {{ __('Kelola Kategori') }}
+                </x-responsive-nav-link>
+            @else
+                <!-- Link Keranjang (Hanya untuk User) (Responsive) -->
+                <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
+                    {{ __('Keranjang') }}
+                    @php
+                        // Hitung lagi untuk responsive
+                        $cartCount = \App\Models\Cart::where('user_id', Auth::id())->count();
+                    @endphp
+                    @if($cartCount > 0)
+                        <span class="ms-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full">
+                            {{ $cartCount }}
+                        </span>
+                    @endif
+                </x-responsive-nav-link>
             @endif
-            <!-- === AKHIR LINK KERANJANG (RESPONSIVE) === -->
-
-             <!-- === LINK ADMIN (YANG SUDAH ADA) === -->
-             @if(Auth::user()->role == 'admin')
-             <x-responsive-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                {{ __('Kelola Produk') }}
-            </x-responsive-nav-link>
-             @endif
-             <!-- === AKHIR LINK ADMIN === -->
         </div>
 
-        <!-- Responsive Settings Options -->
+        <!-- Responsive Settings Options (Lengkap) -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
