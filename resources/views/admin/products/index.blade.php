@@ -6,64 +6,102 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <!-- 
+            MODIFIKASI: 
+            - Padding 'px-4' ditambahkan agar konsisten 
+              dengan dashboard di mobile (tidak mepet)
+        -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-
+                <div class="p-4 sm:p-6 text-gray-900">
+                    
                     <!-- Tombol Tambah Produk -->
-                    <a href="{{ route('admin.products.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 active:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150 mb-4">
-                        Tambah Produk Baru
-                    </a>
+                    <div class="mb-6 text-right">
+                        <a href="{{ route('admin.products.create') }}" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm font-medium">
+                            + Tambah Produk
+                        </a>
+                    </div>
 
                     <!-- Notifikasi Sukses -->
                     @if (session('success'))
-                        <div class="mb-4 p-4 bg-green-100 text-green-700 border border-green-300 rounded-md">
+                        <div class="mb-6 font-medium text-sm text-green-600 bg-green-100 border border-green-300 rounded-md p-4 shadow-sm">
                             {{ session('success') }}
                         </div>
                     @endif
 
-                    <!-- Tabel Daftar Produk -->
-                    <div class="overflow-x-auto">
+                    <!-- 
+                        MODIFIKASI:
+                        - Tabel dibungkus dengan 'overflow-x-auto' agar 
+                          hanya tabelnya yang scroll di mobile, tidak merusak layout
+                    -->
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <!-- Kolom Nama & Kategori -->
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Nama
+                                        Nama / Kategori
                                     </th>
+                                    <!-- Kolom Harga -->
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Harga
                                     </th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Aksi
+                                    <!-- Kolom Stok -->
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Stok
+                                    </th>
+                                    <!-- Kolom Tanggal -->
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Terakhir Diubah
+                                    </th>
+                                    <!-- Kolom Aksi -->
+                                    <th scope="col" class="relative px-6 py-3">
+                                        <span class="sr-only">Aksi</span>
                                     </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($products as $product)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $product->name }}
+                                        <!-- Data Nama & Kategori -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
+                                            <!-- Tampilkan nama kategori, cek jika kategori ada (null safety) -->
+                                            <div class="text-sm text-gray-500">{{ $product->category->name ?? 'Tanpa Kategori' }}</div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            Rp {{ number_format($product->price, 0, ',', '.') }}
+                                        <!-- Data Harga -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
                                         </td>
+                                        <!-- Data Stok -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium {{ $product->quantity <= 10 ? 'text-red-600' : 'text-green-600' }}">
+                                                {{ $product->quantity }} pcs
+                                            </div>
+                                        </td>
+                                        <!-- Data Tanggal -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900" title="Ditambahkan: {{ $product->created_at->format('d/m/Y H:i') }}">
+                                                {{ $product->updated_at->diffForHumans() }}
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                Ditambah: {{ $product->created_at->format('d M Y') }}
+                                            </div>
+                                        </td>
+                                        <!-- Data Aksi -->
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <!-- Tombol Edit -->
-                                            <a href="{{ route('admin.products.edit', $product) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                                            
-                                            <!-- Tombol Hapus (dalam form) -->
-                                            <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline-block">
+                                            <a href="{{ route('admin.products.edit', $product->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                            <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" class="inline ml-4" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900">
-                                                    Hapus
-                                                </button>
+                                                <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
                                             </form>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                        <!-- Update colspan menjadi 5 karena ada 5 kolom -->
+                                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
                                             Belum ada produk.
                                         </td>
                                     </tr>
@@ -77,3 +115,4 @@
         </div>
     </div>
 </x-app-layout>
+

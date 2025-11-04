@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\Category; // Pastikan ini di-import
+use App\Models\Category; // Pastikan Category di-import
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -14,7 +14,11 @@ class ProductController extends Controller
      */
     public function index()
     {
+        // MODIFIKASI:
+        // Kita gunakan ->with('category') untuk 'Eager Loading'
+        // Ini lebih efisien daripada mengambil data kategori satu per satu di dalam loop
         $products = Product::with('category')->latest()->get();
+        
         return view('admin.products.index', compact('products'));
     }
 
@@ -23,6 +27,7 @@ class ProductController extends Controller
      */
     public function create()
     {
+        // Ambil semua kategori untuk dropdown
         $categories = Category::all();
         return view('admin.products.create', compact('categories'));
     }
@@ -32,13 +37,14 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // Validasi data (termasuk kategori dan stok)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0', // <-- TAMBAHKAN VALIDASI INI
-            'category_id' => 'required|exists:categories,id',
-            'image_url' => 'nullable|url',
+            'category_id' => 'required|exists:categories,id', // Validasi kategori
+            'quantity' => 'required|integer|min:0', // Validasi stok
+            'image_url' => 'nullable|url'
         ]);
 
         Product::create($validated);
@@ -46,13 +52,15 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
+// ... (sisa controller tetap sama) ...
+
     /**
      * Display the specified resource.
      */
     public function show(Product $product)
     {
-        // Biasanya tidak digunakan di admin CRUD, redirect ke edit
-        return redirect()->route('admin.products.edit', $product);
+        // (Biasanya tidak dipakai di resource Admin, tapi biarkan saja)
+        return view('admin.products.show', compact('product'));
     }
 
     /**
@@ -60,6 +68,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        // Ambil semua kategori untuk dropdown
         $categories = Category::all();
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -69,13 +78,14 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        // Validasi data (termasuk kategori dan stok)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0', // <-- TAMBAHKAN VALIDASI INI
-            'category_id' => 'required|exists:categories,id',
-            'image_url' => 'nullable|url',
+            'category_id' => 'required|exists:categories,id', // Validasi kategori
+            'quantity' => 'required|integer|min:0', // Validasi stok
+            'image_url' => 'nullable|url'
         ]);
 
         $product->update($validated);
