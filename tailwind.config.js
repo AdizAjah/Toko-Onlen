@@ -12,7 +12,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                // Mengganti font default 'Figtree' menjadi 'Inter'
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
             },
         },
     },

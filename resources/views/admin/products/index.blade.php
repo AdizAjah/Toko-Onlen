@@ -4,6 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Kelola Produk') }}
             </h2>
+            <!-- Tombol ini sudah konsisten dengan palet Indigo -->
             <a href="{{ route('admin.products.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                 + Tambah Produk
             </a>
@@ -24,18 +25,10 @@
                     
                     <h3 class_ ="text-lg font-medium mb-4">Daftar Produk</h3>
 
-                    <!-- 
-                        MODIFIKASI:
-                        Tambahkan 'overflow-x-auto' agar tabel bisa di-scroll 
-                        di mobile tanpa menggeser halaman.
-                    -->
                     <div class="overflow-x-auto border border-gray-200 rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <!-- 
-                                        MODIFIKASI: Kolom Baru (Gambar, Kategori, Stok)
-                                    -->
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Gambar
                                     </th>
@@ -63,10 +56,6 @@
                                 @forelse ($products as $product)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <!-- 
-                                                MODIFIKASI: 
-                                                Tampilkan gambar dari Storage
-                                            -->
                                             <img src="{{ $product->image_url ? Storage::url($product->image_url) : 'https://placehold.co/100x100/e2e8f0/cccccc?text=Gambar' }}" 
                                                  alt="{{ $product->name }}" 
                                                  class="w-16 h-16 object-cover rounded-md border border-gray-200">
@@ -77,9 +66,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <!-- 
                                                 MODIFIKASI: 
-                                                Tampilkan nama kategori
+                                                Mengganti badge 'green' menjadi 'indigo' agar konsisten
                                             -->
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                                                 {{ $product->category->name ?? 'N/A' }}
                                             </span>
                                         </td>
@@ -87,20 +76,13 @@
                                             <div class="text-sm text-gray-900">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <!-- 
-                                                MODIFIKASI: 
-                                                Tampilkan stok
-                                            -->
                                             <div class="text-sm text-gray-900">{{ $product->quantity }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <!-- 
-                                                MODIFIKASI: 
-                                                Format tanggal
-                                            -->
                                             {{ $product->updated_at->format('d M Y, H:i') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <!-- Style link ini sudah konsisten (indigo) -->
                                             <a href="{{ route('admin.products.edit', $product->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                             
                                             <!-- Form Hapus -->
@@ -126,4 +108,3 @@
         </div>
     </div>
 </x-app-layout>
-

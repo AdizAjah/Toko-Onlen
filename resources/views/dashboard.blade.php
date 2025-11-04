@@ -66,13 +66,14 @@
                         
                         <!-- Tombol Submit Form -->
                         <div class="flex items-center justify-end space-x-4">
-                            <!-- Link Reset (Menghapus semua query) -->
-                            <a href="{{ route('dashboard') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                            <!-- MODIFIKASI: Ganti hover:text-gray-900 menjadi hover:text-indigo-600 -->
+                            <a href="{{ route('dashboard') }}" class="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200">
                                 Reset Filter
                             </a>
-                            <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
+                            <!-- Tombol ini akan otomatis menjadi Indigo dari component primary-button -->
+                            <x-primary-button>
                                 Terapkan Filter
-                            </button>
+                            </x-primary-button>
                         </div>
                     </form>
 
@@ -89,6 +90,7 @@
                             unset($queryAll['category_id']); // Hapus filter kategori
                         @endphp
                         <!-- MODIFIKASI RESPONSIF: padding 'px-3 py-1.5 text-xs' dan 'sm:px-4 sm:py-2 sm:text-sm' -->
+                        <!-- Style ini sudah bagus dan konsisten dengan palet Indigo -->
                         <a href="{{ route('dashboard', $queryAll) }}" 
                            class="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm rounded-lg font-medium transition-colors duration-150
                                   {{ !$selectedCategory ? 
@@ -113,10 +115,6 @@
             </div>
             
             <!-- Judul "Produk Kami" -->
-            <!-- 
-                MODIFIKASI: 
-                - Menghapus 'px-1 sm:px-0' karena padding sudah dihandle parent
-            -->
             <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">
                 @if ($selectedCategory)
                     Menampilkan Produk: {{ $categories->find($selectedCategory)->name }}
@@ -128,19 +126,13 @@
             </h3>
 
             <!-- Grid Produk -->
-            <!-- 
-                MODIFIKASI RESPONSIF: 
-                - 'grid-cols-2' (menjadi 2 kolom di HP)
-                - 'md:grid-cols-3' (menjadi 3 kolom di tablet)
-                - 'gap-4 md:gap-6' (gap lebih kecil di HP)
-            -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 @forelse ($products as $product)
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col relative group transition-shadow duration-150 hover:shadow-lg">
+                    <!-- MODIFIKASI: Menambahkan 'transition-all duration-300 hover:shadow-xl' untuk efek dinamis -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col relative group transition-all duration-300 hover:shadow-xl">
                         
                         <!-- Tanda Stok Habis -->
                         @if($product->quantity <= 0)
-                            <!-- MODIFIKASI RESPONSIF: 'text-[10px] px-2 py-0.5' dan 'sm:text-xs sm:px-3 sm:py-1' -->
                             <span class="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 bg-red-600 text-white text-[10px] px-2 py-0.5 sm:text-xs sm:px-3 sm:py-1 rounded-full uppercase font-semibold">
                                 Stok Habis
                             </span>
@@ -151,25 +143,22 @@
 
                         <!-- Gambar Produk -->
                         <div class="aspect-h-1 aspect-w-1 w-full overflow-hidden">
-                            <img src="{{ $product->image_url ?? 'https://placehold.co/600x400/EEE/31343C?text=Produk' }}"
+                            <img src="{{ $product->image_url ? Storage::url($product->image_url) : 'https://placehold.co/600x400/e2e8f0/cccccc?text=Produk' }}"
                                  alt="{{ $product->name }}"
                                  class="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105
                                         @if($product->quantity <= 0) opacity-60 @endif">
                         </div>
 
                         <!-- Detail Produk -->
-                        <!-- MODIFIKASI RESPONSIF: 'p-3 sm:p-4' -->
                         <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                            <!-- MODIFIKASI RESPONSIF: 'text-xs sm:text-sm' -->
-                            <h3 class="text-xs sm:text-sm text-gray-500 mb-1">
+                            <!-- MODIFIKASI: Mengganti text-gray-500 menjadi text-indigo-600 dan font-medium -->
+                            <h3 class="text-xs sm:text-sm font-medium text-indigo-600 mb-1">
                                 {{ $product->category->name ?? 'Tanpa Kategori' }}
                             </h3>
-                            <!-- MODIFIKASI RESPONSIF: 'text-sm sm:text-md' -->
                             <h4 class="text-sm sm:text-md font-semibold text-gray-900 truncate">
                                 {{ $product->name }}
                             </h4>
-                            <!-- MODIFIKASI RESPONSIF: 'text-base sm:text-lg' -->
-                            <p class="mt-2 text-base sm:text-lg font-bold text-gray-800">
+                            <p class="mt-2 text-base sm:text-lg font-bold text-gray-900">
                                 Rp {{ number_format($product->price, 0, ',', '.') }}
                             </p>
                             
@@ -196,4 +185,3 @@
         </div>
     </div>
 </x-app-layout>
-
