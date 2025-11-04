@@ -1,60 +1,59 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Kelola Produk') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Kelola Produk') }}
+            </h2>
+            <a href="{{ route('admin.products.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 active:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                + Tambah Produk
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
-        <!-- 
-            MODIFIKASI: 
-            - Padding 'px-4' ditambahkan agar konsisten 
-              dengan dashboard di mobile (tidak mepet)
-        -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-4 sm:p-6 text-gray-900">
-                    
-                    <!-- Tombol Tambah Produk -->
-                    <div class="mb-6 text-right">
-                        <a href="{{ route('admin.products.create') }}" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm font-medium">
-                            + Tambah Produk
-                        </a>
-                    </div>
+            <!-- Notifikasi Sukses -->
+            @if (session('success'))
+                <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            @endif
 
-                    <!-- Notifikasi Sukses -->
-                    @if (session('success'))
-                        <div class="mb-6 font-medium text-sm text-green-600 bg-green-100 border border-green-300 rounded-md p-4 shadow-sm">
-                            {{ session('success') }}
-                        </div>
-                    @endif
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    
+                    <h3 class_ ="text-lg font-medium mb-4">Daftar Produk</h3>
 
                     <!-- 
                         MODIFIKASI:
-                        - Tabel dibungkus dengan 'overflow-x-auto' agar 
-                          hanya tabelnya yang scroll di mobile, tidak merusak layout
+                        Tambahkan 'overflow-x-auto' agar tabel bisa di-scroll 
+                        di mobile tanpa menggeser halaman.
                     -->
                     <div class="overflow-x-auto border border-gray-200 rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <!-- Kolom Nama & Kategori -->
+                                    <!-- 
+                                        MODIFIKASI: Kolom Baru (Gambar, Kategori, Stok)
+                                    -->
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Nama / Kategori
+                                        Gambar
                                     </th>
-                                    <!-- Kolom Harga -->
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Nama Produk
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Kategori
+                                    </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Harga
                                     </th>
-                                    <!-- Kolom Stok -->
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Stok
                                     </th>
-                                    <!-- Kolom Tanggal -->
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Terakhir Diubah
+                                        Diubah Pada
                                     </th>
-                                    <!-- Kolom Aksi -->
                                     <th scope="col" class="relative px-6 py-3">
                                         <span class="sr-only">Aksi</span>
                                     </th>
@@ -63,35 +62,49 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($products as $product)
                                     <tr>
-                                        <!-- Data Nama & Kategori -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <!-- 
+                                                MODIFIKASI: 
+                                                Tampilkan gambar dari Storage
+                                            -->
+                                            <img src="{{ $product->image_url ? Storage::url($product->image_url) : 'https://placehold.co/100x100/e2e8f0/cccccc?text=Gambar' }}" 
+                                                 alt="{{ $product->name }}" 
+                                                 class="w-16 h-16 object-cover rounded-md border border-gray-200">
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
-                                            <!-- Tampilkan nama kategori, cek jika kategori ada (null safety) -->
-                                            <div class="text-sm text-gray-500">{{ $product->category->name ?? 'Tanpa Kategori' }}</div>
                                         </td>
-                                        <!-- Data Harga -->
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <!-- 
+                                                MODIFIKASI: 
+                                                Tampilkan nama kategori
+                                            -->
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                {{ $product->category->name ?? 'N/A' }}
+                                            </span>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
                                         </td>
-                                        <!-- Data Stok -->
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium {{ $product->quantity <= 10 ? 'text-red-600' : 'text-green-600' }}">
-                                                {{ $product->quantity }} pcs
-                                            </div>
+                                            <!-- 
+                                                MODIFIKASI: 
+                                                Tampilkan stok
+                                            -->
+                                            <div class="text-sm text-gray-900">{{ $product->quantity }}</div>
                                         </td>
-                                        <!-- Data Tanggal -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900" title="Ditambahkan: {{ $product->created_at->format('d/m/Y H:i') }}">
-                                                {{ $product->updated_at->diffForHumans() }}
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                Ditambah: {{ $product->created_at->format('d M Y') }}
-                                            </div>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <!-- 
+                                                MODIFIKASI: 
+                                                Format tanggal
+                                            -->
+                                            {{ $product->updated_at->format('d M Y, H:i') }}
                                         </td>
-                                        <!-- Data Aksi -->
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('admin.products.edit', $product->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                            <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" class="inline ml-4" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?');">
+                                            
+                                            <!-- Form Hapus -->
+                                            <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" class="inline-block ml-4" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
@@ -100,16 +113,14 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <!-- Update colspan menjadi 5 karena ada 5 kolom -->
-                                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                            Belum ada produk.
+                                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                            Belum ada produk yang ditambahkan.
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>

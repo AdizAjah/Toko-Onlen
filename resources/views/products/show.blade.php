@@ -6,127 +6,113 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <!-- Notifikasi Sukses (jika ada) -->
+            <!-- 
+                MODIFIKASI:
+                Tambahkan blok notifikasi 'success' (pop-up) di sini.
+            -->
             @if (session('success'))
-                <div class="mb-6 bg-green-100 border border-green-300 text-green-600 px-4 py-3 rounded-md shadow-sm" role="alert">
-                    <span class="font-medium">{{ session('success') }}</span>
-                </div>
-            @endif
-            <!-- Notifikasi Error (jika ada) -->
-            @if (session('error'))
-                <div class="mb-6 bg-red-100 border border-red-300 text-red-600 px-4 py-3 rounded-md shadow-sm" role="alert">
-                    <span class="font-medium">{{ session('error') }}</span>
+                <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
                 </div>
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 md:grid md:grid-cols-2 md:gap-12">
+                <div class="p-6 text-gray-900">
                     
-                    <!-- Sisi Kiri: Gambar Produk -->
-                    <div class="mb-6 md:mb-0">
-                        <img src="{{ $product->image_url ?? 'https://placehold.co/600x400/EEE/31343C?text=Produk' }}"
-                             alt="{{ $product->name }}"
-                             class="w-full h-auto object-cover rounded-lg shadow-md">
-                    </div>
-
-                    <!-- Sisi Kanan: Detail & Form Keranjang -->
-                    <div class="flex flex-col justify-between">
+                    <!-- Grid untuk layout detail -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        
+                        <!-- Kolom Gambar -->
                         <div>
-                            <!-- Kategori -->
-                            <span class="text-sm font-semibold text-indigo-600 uppercase">
-                                {{ $product->category->name ?? 'Tanpa Kategori' }}
-                            </span>
-                            
-                            <!-- Nama Produk -->
-                            <h1 class="text-3xl font-bold text-gray-900 mt-2 mb-3">
-                                {{ $product->name }}
-                            </h1>
-                            
-                            <!-- Harga -->
-                            <p class="text-4xl font-extrabold text-gray-800 mb-4">
-                                Rp {{ number_format($product->price, 0, ',', '.') }}
-                            </p>
-                            
-                            <!-- Deskripsi -->
-                            <p class="text-gray-700 leading-relaxed mb-6">
-                                {{ $product->description ?? 'Deskripsi produk tidak tersedia.' }}
-                            </p>
-
-                            <!-- ===== TAMPILAN STOK BARU ===== -->
-                            <div class="mb-6">
-                                @if($product->quantity > 10)
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                        <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-500" fill="currentColor" viewBox="0 0 8 8">
-                                            <circle cx="4" cy="4" r="3" />
-                                        </svg>
-                                        Stok Tersedia ({{ $product->quantity }})
-                                    </span>
-                                @elseif($product->quantity > 0)
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                        <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-yellow-500" fill="currentColor" viewBox="0 0 8 8">
-                                            <circle cx="4" cy="4" r="3" />
-                                        </svg>
-                                        Stok Hampir Habis (Sisa {{ $product->quantity }})
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                        <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-500" fill="currentColor" viewBox="0 0 8 8">
-                                            <circle cx="4" cy="4" r="3" />
-                                        </svg>
-                                        Stok Habis
-                                    </span>
-                                @endif
-                            </div>
-                            <!-- ===== AKHIR TAMPILAN STOK ===== -->
+                            <!-- 
+                                MODIFIKASI: 
+                                Gunakan Storage::url() untuk menampilkan gambar
+                            -->
+                            <img src="{{ $product->image_url ? Storage::url($product->image_url) : 'https://placehold.co/600x400/e2e8f0/cccccc?text=Gambar+Produk' }}" 
+                                 alt="{{ $product->name }}" 
+                                 class="w-full h-auto object-cover rounded-lg shadow-md border border-gray-200">
                         </div>
 
-                        <!-- Form Tambah Keranjang -->
-                        @if($product->quantity > 0)
-                            <form action="{{ route('cart.store') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                
-                                <div class="flex items-center gap-4">
-                                    <!-- Input Jumlah -->
-                                    <div>
-                                        <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-                                        <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ $product->quantity }}" 
-                                               class="w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    </div>
-                                    
-                                    <!-- Tombol Submit -->
-                                    <button type="submit" 
-                                            class="flex-1 mt-6 px-8 py-3 bg-indigo-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        Tambah ke Keranjang
-                                    </button>
-                                </div>
-                                <!-- Info max stok -->
-                                <p class="text-xs text-gray-500 mt-2 ml-1">Maks. pembelian: {{ $product->quantity }} unit.</p>
-                            </form>
-                        @else
-                            <!-- Tampilan jika stok habis -->
-                            <div class="mt-6">
-                                <button type="button" 
-                                        disabled
-                                        class="flex-1 w-full px-8 py-3 bg-gray-300 text-gray-500 text-base font-medium rounded-md shadow-sm cursor-not-allowed">
-                                    Stok Habis
-                                </button>
-                            </div>
-                        @endif
+                        <!-- Kolom Detail & Form -->
+                        <div class="flex flex-col justify-between">
+                            <div>
+                                <!-- Kategori -->
+                                <span class="text-sm font-semibold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full">
+                                    {{ $product->category->name ?? 'Tidak Berkategori' }}
+                                </span>
 
+                                <!-- Nama Produk -->
+                                <h1 class="text-3xl font-bold text-gray-800 mt-3 mb-2">
+                                    {{ $product->name }}
+                                </h1>
+
+                                <!-- Harga -->
+                                <p class="text-4xl font-extrabold text-gray-900 mb-4">
+                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                </p>
+
+                                <!-- Deskripsi -->
+                                <div class="prose max-w-none text-gray-600 mb-6">
+                                    <p>{{ $product->description }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Form Add to Cart -->
+                            <div>
+                                <!-- 
+                                    MODIFIKASI: 
+                                    Tampilkan Stok (Quantity)
+                                -->
+                                <div class="mb-4">
+                                    <span class="text-sm font-medium text-gray-700">
+                                        Stok Tersisa: 
+                                        <span class="font-bold {{ $product->quantity > 10 ? 'text-green-600' : 'text-red-600' }}">
+                                            {{ $product->quantity }}
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <!-- Cek jika stok ada -->
+                                @if ($product->quantity > 0)
+                                    <form action="{{ route('cart.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        
+                                        <div class="flex items-center gap-4 mb-4">
+                                            <!-- Input Jumlah -->
+                                            <div>
+                                                <x-input-label for="quantity" :value="__('Jumlah')" class="sr-only" />
+                                                <x-text-input id="quantity" class="block w-24 text-center" 
+                                                              type="number" 
+                                                              name="quantity" 
+                                                              value="1" 
+                                                              min="1" 
+                                                              max="{{ $product->quantity }}" 
+                                                              required />
+                                            </div>
+                                            
+                                            <!-- Tombol Add to Cart -->
+                                            <x-primary-button class="w-full justify-center text-base py-3">
+                                                {{ __('+ Tambah ke Keranjang') }}
+                                            </x-primary-button>
+                                        </div>
+                                    </form>
+                                @else
+                                    <!-- Tampilan jika stok habis -->
+                                    <div class="p-4 text-center bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                                        <p class="font-bold">Stok Habis</p>
+                                        <p class="text-sm">Produk ini tidak tersedia saat ini.</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                        </div>
                     </div>
+
                 </div>
             </div>
-
-            <!-- Tombol Kembali -->
-            <div class="mt-8">
-                <a href="{{ url()->previous() }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    &larr; Kembali ke Daftar Produk
-                </a>
-            </div>
-
         </div>
     </div>
 </x-app-layout>

@@ -10,46 +10,37 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
+                <!-- Navigation Links (Desktop) -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <!-- Tampilkan link berdasarkan role -->
+                    <!-- Link Keranjang (Hanya untuk User) -->
+                    @if(Auth::user()->role == 'user')
+                        <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
+                            {{ __('Keranjang') }}
+                        </x-nav-link>
+                    @endif
+
+                    <!-- Link Admin (Hanya untuk Admin) -->
                     @if(Auth::user()->role == 'admin')
-                        <!-- Link Admin -->
                         <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
                             {{ __('Kelola Produk') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
                             {{ __('Kelola Kategori') }}
                         </x-nav-link>
-                    @else
-                        <!-- Link User (Keranjang) -->
-                        <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
-                            {{ __('Keranjang') }}
-                            @php
-                                // Hitung item di keranjang
-                                $cartCount = \App\Models\Cart::where('user_id', Auth::id())->count();
-                            @endphp
-                            @if($cartCount > 0)
-                                <span class="ms-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full">
-                                    {{ $cartCount }}
-                                </span>
-                            @endif
-                        </x-nav-link>
                     @endif
                 </div>
             </div>
 
-            <!-- Settings Dropdown (Lengkap) -->
+            <!-- Settings Dropdown (Desktop) -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
-
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -66,7 +57,6 @@
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
@@ -77,7 +67,7 @@
                 </x-dropdown>
             </div>
 
-            <!-- Hamburger -->
+            <!-- Hamburger (Mobile) -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -89,39 +79,84 @@
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
+    <!-- 
+        MODIFIKASI DIMULAI DI SINI:
+        Menu dropdown responsif lama dihapus dan diganti dengan 
+        logika Overlay + Slide-in Panel 
+    -->
+
+    <!-- Mobile Menu (Slide-in) & Overlay -->
+    
+    <!-- Overlay Gelap (muncul saat 'open = true') -->
+    <div x-show="open" 
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="open = false" 
+         class="fixed inset-0 z-40 bg-black/50 sm:hidden"
+         x-cloak>
+    </div>
+
+    <!-- Panel Slide-in (muncul dari kiri saat 'open = true') -->
+    <div x-show="open"
+         x-transition:enter="transform transition ease-in-out duration-300"
+         x-transition:enter-start="-translate-x-full"
+         x-transition:enter-end="translate-x-0"
+         x-transition:leave="transform transition ease-in-out duration-300"
+         x-transition:leave-start="translate-x-0"
+         x-transition:leave-end="-translate-x-full"
+         class="fixed top-0 left-0 bottom-0 z-50 w-72 bg-white shadow-lg overflow-y-auto sm:hidden"
+         @click.outside="open = false"
+         x-cloak>
+        
+        <!-- Logo/Header di dalam menu -->
+        <div class="p-4 border-b flex justify-between items-center">
+            <a href="{{ route('dashboard') }}">
+                <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+            </a>
+            <!-- Tombol Close di dalam panel -->
+            <button @click="open = false" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Link Navigasi (Mobile) -->
+        <div class="pt-4 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-
-            <!-- Tampilkan link berdasarkan role (Responsive) -->
-            @if(Auth::user()->role == 'admin')
-                <x-responsive-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                    {{ __('Kelola Produk') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
-                    {{ __('Kelola Kategori') }}
-                </x-responsive-nav-link>
-            @else
-                <!-- Link Keranjang (Hanya untuk User) (Responsive) -->
+            
+            <!-- Link Keranjang (Hanya untuk User) -->
+            @if(Auth::user()->role == 'user')
                 <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
                     {{ __('Keranjang') }}
-                    @php
-                        // Hitung lagi untuk responsive
-                        $cartCount = \App\Models\Cart::where('user_id', Auth::id())->count();
-                    @endphp
-                    @if($cartCount > 0)
-                        <span class="ms-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full">
-                            {{ $cartCount }}
-                        </span>
-                    @endif
                 </x-responsive-nav-link>
+            @endif
+
+            <!-- Link Admin (Hanya untuk Admin) -->
+            @if(Auth::user()->role == 'admin')
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                    <div class="px-4">
+                        <div class="font-medium text-sm text-gray-500 uppercase">{{ __('Menu Admin') }}</div>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <x-responsive-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
+                            {{ __('Kelola Produk') }}
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                            {{ __('Kelola Kategori') }}
+                        </x-responsive-nav-link>
+                    </div>
+                </div>
             @endif
         </div>
 
-        <!-- Responsive Settings Options (Lengkap) -->
+        <!-- User Info & Logout (Mobile) -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
@@ -136,7 +171,6 @@
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
@@ -146,5 +180,7 @@
             </div>
         </div>
     </div>
+    <!-- MODIFIKASI SELESAI -->
+
 </nav>
 

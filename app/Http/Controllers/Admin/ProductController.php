@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\Category; // Pastikan Category di-import
+use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // Pastikan ini di-import
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -14,11 +16,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        // MODIFIKASI:
-        // Kita gunakan ->with('category') untuk 'Eager Loading'
-        // Ini lebih efisien daripada mengambil data kategori satu per satu di dalam loop
+        // Ambil produk dengan relasi kategori (untuk efisiensi) dan stok
         $products = Product::with('category')->latest()->get();
-        
         return view('admin.products.index', compact('products'));
     }
 
@@ -27,7 +26,6 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Ambil semua kategori untuk dropdown
         $categories = Category::all();
         return view('admin.products.create', compact('categories'));
     }
@@ -37,29 +35,35 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi data (termasuk kategori dan stok)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id', // Validasi kategori
             'quantity' => 'required|integer|min:0', // Validasi stok
-            'image_url' => 'nullable|url'
+            'category_id' => 'required|exists:categories,id',
+            
+            // MODIFIKASI: Ubah 'required' menjadi 'nullable'
+            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image_url')) {
+            // Simpan gambar ke 'storage/app/public/products'
+            $imagePath = $request->file('image_url')->store('products', 'public');
+            $validated['image_url'] = $imagePath;
+        }
 
         Product::create($validated);
 
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
-// ... (sisa controller tetap sama) ...
-
     /**
      * Display the specified resource.
      */
     public function show(Product $product)
     {
-        // (Biasanya tidak dipakai di resource Admin, tapi biarkan saja)
+        // Tidak digunakan di admin panel kita, tapi bisa diisi jika perlu
         return view('admin.products.show', compact('product'));
     }
 
@@ -68,7 +72,6 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        // Ambil semua kategori untuk dropdown
         $categories = Category::all();
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -78,15 +81,28 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        // Validasi data (termasuk kategori dan stok)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id', // Validasi kategori
             'quantity' => 'required|integer|min:0', // Validasi stok
-            'image_url' => 'nullable|url'
+            'category_id' => 'required|exists:categories,id',
+            
+            // Validasi update gambar sudah benar (nullable)
+            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        // Logika untuk update gambar
+        if ($request->hasFile('image_url')) {
+            // 1. Hapus gambar lama jika ada
+            if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
+                Storage::disk('public')->delete($product->image_url);
+            }
+
+            // 2. Simpan gambar baru
+            $imagePath = $request->file('image_url')->store('products', 'public');
+            $validated['image_url'] = $imagePath;
+        }
 
         $product->update($validated);
 
@@ -98,8 +114,30 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        // Hapus gambar dari storage JIKA ada
+        if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
+            Storage::disk('public')->delete($product->image_url);
+        }
+
+        // Hapus produk dari database
         $product->delete();
+
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
+    }
+
+    /**
+     * Menghapus gambar produk secara spesifik.
+     */
+    public function destroyImage(Product $product)
+    {
+        if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
+            Storage::disk('public')->delete($product->image_url);
+            $product->image_url = null; // Setel kolom di DB jadi null
+            $product->save();
+            return redirect()->back()->with('success', 'Gambar produk berhasil dihapus.');
+        }
+
+        return redirect()->back()->with('error', 'Tidak ada gambar untuk dihapus.');
     }
 }
 

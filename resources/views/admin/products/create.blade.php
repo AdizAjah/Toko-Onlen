@@ -11,89 +11,75 @@
                 <div class="p-6 text-gray-900">
                     
                     <!-- Form -->
-                    <form action="{{ route('admin.products.store') }}" method="POST">
+                    <!-- Pastikan ada enctype="multipart/form-data" untuk upload file -->
+                    <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
                         @csrf
-                        <div class="space-y-6">
 
-                            <!-- Nama Produk -->
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700">Nama Produk</label>
-                                <input type="text" name="name" id="name" value="{{ old('name') }}" required
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('name') border-red-500 @enderror">
-                                @error('name')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Kategori -->
+                        <div class="mb-4">
+                            <x-input-label for="category_id" :value="__('Kategori')" />
+                            <select id="category_id" name="category_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <option value="">Pilih Kategori</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
+                        </div>
 
-                            <!-- Kategori -->
-                            <div>
-                                <label for="category_id" class="block text-sm font-medium text-gray-700">Kategori</label>
-                                <select name="category_id" id="category_id" required
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('category_id') border-red-500 @enderror">
-                                    <option value="">Pilih Kategori</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('category_id')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Nama Produk -->
+                        <div class="mb-4">
+                            <x-input-label for="name" :value="__('Nama Produk')" />
+                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                        </div>
 
-                            <!-- Deskripsi -->
-                            <div>
-                                <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                                <textarea name="description" id="description" rows="4"
-                                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
-                                @error('description')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Deskripsi -->
+                        <div class="mb-4">
+                            <x-input-label for="description" :value="__('Deskripsi')" />
+                            <textarea id="description" name="description" rows="4" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('description') }}</textarea>
+                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                        </div>
 
-                            <!-- Harga -->
-                            <div>
-                                <label for="price" class="block text-sm font-medium text-gray-700">Harga (Rp)</label>
-                                <input type="number" name="price" id="price" value="{{ old('price') }}" required min="0"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('price') border-red-500 @enderror">
-                                @error('price')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Harga -->
+                        <div class="mb-4">
+                            <x-input-label for="price" :value="__('Harga')" />
+                            <x-text-input id="price" class="block mt-1 w-full" type="number" name="price" :value="old('price')" required />
+                            <x-input-error :messages="$errors->get('price')" class="mt-2" />
+                        </div>
 
-                            <!-- ===== FIELD BARU: JUMLAH STOK ===== -->
-                            <div>
-                                <label for="quantity" class="block text-sm font-medium text-gray-700">Jumlah Stok</label>
-                                <input type="number" name="quantity" id="quantity" value="{{ old('quantity', 0) }}" required min="0"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('quantity') border-red-500 @enderror">
-                                @error('quantity')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <!-- ===== AKHIR FIELD BARU ===== -->
+                        <!-- Stok (Quantity) -->
+                        <div class="mb-4">
+                            <x-input-label for="quantity" :value="__('Jumlah Stok')" />
+                            <x-text-input id="quantity" class="block mt-1 w-full" type="number" name="quantity" :value="old('quantity', 0)" required />
+                            <x-input-error :messages="$errors->get('quantity')" class="mt-2" />
+                        </div>
 
-                            <!-- Image URL -->
-                            <div>
-                                <label for="image_url" class="block text-sm font-medium text-gray-700">URL Gambar (Opsional)</label>
-                                <input type="url" name="image_url" id="image_url" value="{{ old('image_url') }}"
-                                       placeholder="https://example.com/image.png"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('image_url') border-red-500 @enderror">
-                                @error('image_url')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        <!-- Upload Gambar -->
+                        <div class="mb-4">
+                            <!-- MODIFIKASI: Tambah '(Opsional)' -->
+                            <x-input-label for="image_url" :value="__('Gambar Produk (Opsional)')" />
+                            <input id="image_url" name="image_url" type="file" class="block mt-1 w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-indigo-50 file:text-indigo-700
+                                hover:file:bg-indigo-100
+                            "/>
+                            <x-input-error :messages="$errors->get('image_url')" class="mt-2" />
+                        </div>
 
-                            <!-- Tombol Submit -->
-                            <div class="flex justify-end space-x-4">
-                                <a href="{{ route('admin.products.index') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
-                                    Batal
-                                </a>
-                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                                    Simpan Produk
-                                </button>
-                            </div>
+                        <!-- Tombol Submit -->
+                        <div class="flex items-center justify-end mt-6">
+                            <a href="{{ route('admin.products.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4">
+                                Batal
+                            </a>
 
+                            <x-primary-button>
+                                {{ __('Simpan Produk') }}
+                            </x-primary-button>
                         </div>
                     </form>
 

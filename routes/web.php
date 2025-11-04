@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\CartController;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder; // <-- Pastikan import ini ada
+use Illuminate\Database\Eloquent\Builder;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +25,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route Dashboard (Versi final dengan SEMUA filter)
+// Route Dashboard (HANYA SATU DEFINISI YANG BENAR)
 Route::get('/dashboard', function (Request $request) {
     
     $categories = Category::all(); // Ambil semua kategori
@@ -71,9 +71,9 @@ Route::get('/dashboard', function (Request $request) {
         'products', 
         'categories', 
         'selectedCategory',
-        'search',       // Kirim nilai search kembali ke view
-        'minPrice',     // Kirim nilai minPrice kembali ke view
-        'maxPrice'      // Kirim nilai maxPrice kembali ke view
+        'search',      // Kirim nilai search kembali ke view
+        'minPrice',    // Kirim nilai minPrice kembali ke view
+        'maxPrice'     // Kirim nilai maxPrice kembali ke view
     ));
 
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -98,9 +98,13 @@ Route::middleware('auth')->group(function () {
 // Grup Rute untuk Admin
 Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(function () {
     Route::resource('products', ProductController::class);
+    
+    // --- MODIFIKASI: TAMBAHKAN RUTE INI ---
+    Route::delete('products/{product}/image', [ProductController::class, 'destroyImage'])->name('products.image.destroy');
+    // -------------------------------------
+
     Route::resource('categories', CategoryController::class);
 });
-
 
 require __DIR__.'/auth.php';
 
