@@ -15,15 +15,23 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
-        <!-- MODIFIKASI: Mengganti bg-gray-100 menjadi bg-gray-50 agar sesuai dengan app.css -->
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-50">
+        <!-- 
+            MODIFIKASI: 
+            - Tetap menggunakan bg-gray-50 (konsisten dengan app.css Anda)
+            - Mengganti warna logo menjadi text-indigo-600
+            - Membuat kartu login lebih modern (shadow-xl, rounded-lg, padding lebih besar)
+            - Menambahkan px-4 untuk padding di layar kecil
+        -->
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-50 px-4">
             <div>
                 <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                    <!-- MODIFIKASI: Ubah text-gray-500 menjadi text-indigo-600 agar sesuai tema -->
+                    <x-application-logo class="w-20 h-20 fill-current text-indigo-600" />
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <!-- MODIFIKASI: Ganti shadow-md, py-4, sm:rounded-lg menjadi shadow-xl, py-8, rounded-lg -->
+            <div class="w-full sm:max-w-md mt-6 px-6 py-8 bg-white shadow-xl overflow-hidden rounded-lg">
                 {{ $slot }}
             </div>
         </div>
