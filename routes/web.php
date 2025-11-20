@@ -25,6 +25,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
 // Route Dashboard (HANYA SATU DEFINISI YANG BENAR)
 Route::get('/dashboard', function (Request $request) {
     
@@ -75,7 +79,7 @@ Route::get('/dashboard', function (Request $request) {
         'minPrice',    // Kirim nilai minPrice kembali ke view
         'maxPrice'     // Kirim nilai maxPrice kembali ke view
     ));
-
+    
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
@@ -83,12 +87,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
+    
     // Rute untuk Keranjang (Cart)
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
-
+    
     // Rute untuk Halaman Detail Produk
     Route::get('/products/{product}', function (Product $product) {
         return view('products.show', compact('product'));
@@ -105,6 +109,7 @@ Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(fun
 
     Route::resource('categories', CategoryController::class);
 });
+
 
 require __DIR__.'/auth.php';
 

@@ -32,6 +32,10 @@
                             {{ __('Kelola Kategori') }}
                         </x-nav-link>
                     @endif
+
+                    <x-nav-link :href="route('about')" :active="request()->routeIs('about')">
+                        {{ __('About Us') }}
+                    </x-nav-link>
                 </div>
             </div>
 
