@@ -39,6 +39,36 @@
                 </div>
             </div>
 
+            <!-- Search Bar (Desktop) -->
+            <div class="hidden sm:flex sm:items-center sm:flex-1 sm:max-w-md sm:mx-4">
+                <form action="{{ route('dashboard') }}" method="GET" class="w-full">
+                    @if(request('category_id'))
+                        <input type="hidden" name="category_id" value="{{ request('category_id') }}">
+                    @endif
+                    @if(request('brand'))
+                        <input type="hidden" name="brand" value="{{ request('brand') }}">
+                    @endif
+                    @if(request('min_price'))
+                        <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                    @endif
+                    @if(request('max_price'))
+                        <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                    @endif
+                    <div class="relative">
+                        <input type="text" 
+                               name="search" 
+                               placeholder="Cari produk..." 
+                               value="{{ request('search') }}"
+                               class="w-full pl-10 pr-4 py-2 text-sm border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-indigo-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
             <!-- Settings Dropdown (Desktop) -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
@@ -80,6 +110,36 @@
                     </svg>
                 </button>
             </div>
+        </div>
+
+        <!-- Search Bar (Mobile - Below Main Nav) -->
+        <div class="sm:hidden px-4 pb-3">
+            <form action="{{ route('dashboard') }}" method="GET">
+                @if(request('category_id'))
+                    <input type="hidden" name="category_id" value="{{ request('category_id') }}">
+                @endif
+                @if(request('brand'))
+                    <input type="hidden" name="brand" value="{{ request('brand') }}">
+                @endif
+                @if(request('min_price'))
+                    <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                @endif
+                @if(request('max_price'))
+                    <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                @endif
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           placeholder="Cari produk..." 
+                           value="{{ request('search') }}"
+                           class="w-full pl-10 pr-4 py-2 text-sm border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-indigo-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 

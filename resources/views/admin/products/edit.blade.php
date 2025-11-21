@@ -52,6 +52,13 @@
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
+                        <!-- Merek/Brand -->
+                        <div class="mb-4">
+                            <x-input-label for="brand" :value="__('Merek (Opsional)')" />
+                            <x-text-input id="brand" class="block mt-1 w-full" type="text" name="brand" :value="old('brand', $product->brand)" placeholder="Contoh: Samsung, Nike, Unilever" />
+                            <x-input-error :messages="$errors->get('brand')" class="mt-2" />
+                        </div>
+
                         <!-- Deskripsi -->
                         <div class="mb-4">
                             <x-input-label for="description" :value="__('Deskripsi')" />
@@ -75,10 +82,10 @@
 
                         <!-- Upload Gambar -->
                         <div class="mb-4">
-                            <x-input-label for="image" :value="__('Ganti Gambar Produk (Opsional)')" />
-                            <input id="image" class="block mt-1 w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" type="file" name="image">
+                            <x-input-label for="image_url" :value="__('Ganti Gambar Produk (Opsional)')" />
+                            <input id="image_url" class="block mt-1 w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" type="file" name="image_url">
                             <p class="mt-1 text-sm text-gray-500" id="file_input_help">PNG, JPG, GIF, WEBP (Maks. 2MB). Kosongkan jika tidak ingin mengganti gambar.</p>
-                            <x-input-error :messages="$errors->get('image')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('image_url')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end mt-6">

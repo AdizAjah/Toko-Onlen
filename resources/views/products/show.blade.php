@@ -48,6 +48,13 @@
                                     {{ $product->name }}
                                 </h1>
 
+                                <!-- Brand (jika ada) -->
+                                @if($product->brand)
+                                    <p class="text-lg text-gray-600 mb-2">
+                                        Merek: <span class="font-semibold">{{ $product->brand }}</span>
+                                    </p>
+                                @endif
+
                                 <!-- Harga -->
                                 <p class="text-4xl font-extrabold text-gray-900 mb-4">
                                     Rp {{ number_format($product->price, 0, ',', '.') }}

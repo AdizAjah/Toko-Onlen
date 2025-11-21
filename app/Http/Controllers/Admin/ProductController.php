@@ -37,12 +37,11 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'brand' => 'nullable|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0', // Validasi stok
+            'quantity' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
-            
-            // MODIFIKASI: Ubah 'required' menjadi 'nullable'
             'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -83,12 +82,11 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'brand' => 'nullable|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:0', // Validasi stok
+            'quantity' => 'required|integer|min:0',
             'category_id' => 'required|exists:categories,id',
-            
-            // Validasi update gambar sudah benar (nullable)
             'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 

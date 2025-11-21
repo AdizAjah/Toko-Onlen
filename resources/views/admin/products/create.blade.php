@@ -36,6 +36,13 @@
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
+                        <!-- Merek/Brand -->
+                        <div class="mb-4">
+                            <x-input-label for="brand" :value="__('Merek (Opsional)')" />
+                            <x-text-input id="brand" class="block mt-1 w-full" type="text" name="brand" :value="old('brand')" placeholder="Contoh: Samsung, Nike, Unilever" />
+                            <x-input-error :messages="$errors->get('brand')" class="mt-2" />
+                        </div>
+
                         <!-- Deskripsi -->
                         <div class="mb-4">
                             <x-input-label for="description" :value="__('Deskripsi')" />

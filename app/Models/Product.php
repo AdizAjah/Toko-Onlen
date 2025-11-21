@@ -16,10 +16,11 @@ class Product extends Model
      */
     protected $fillable = [
         'name',
+        'brand',
         'description',
         'price',
-        'category_id', // Ini sudah ada dari langkah sebelumnya
-        'quantity',    // <-- TAMBAHKAN INI
+        'category_id',
+        'quantity',
         'image_url',
     ];
 
