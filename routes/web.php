@@ -21,18 +21,13 @@ use Illuminate\Database\Eloquent\Builder;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-
-
 Route::get('/about', function () {
     return view('about');
 })->name('about');
 
 // Route Dashboard (HANYA SATU DEFINISI YANG BENAR)
-Route::get('/dashboard', function (Request $request) {
+// MODIFIKASI: Route ini sekarang menjadi homepage ('/') dan tidak memerlukan login
+Route::get('/', function (Request $request) {
 
     $categories = Category::all(); // Ambil semua kategori
 
@@ -97,7 +92,7 @@ Route::get('/dashboard', function (Request $request) {
         'minPrice',
         'maxPrice'
     ));
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->name('dashboard');
 
 
 Route::middleware('auth')->group(function () {
@@ -109,12 +104,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
-
-    // Rute untuk Halaman Detail Produk
-    Route::get('/products/{product}', function (Product $product) {
-        return view('products.show', compact('product'));
-    })->name('products.show');
 });
+
+// Rute untuk Halaman Detail Produk (Public)
+Route::get('/products/{product}', function (Product $product) {
+    return view('products.show', compact('product'));
+})->name('products.show');
 
 // Grup Rute untuk Admin
 Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(function () {
