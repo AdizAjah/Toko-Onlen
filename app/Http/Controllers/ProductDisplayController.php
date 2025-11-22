@@ -12,8 +12,13 @@ class ProductDisplayController extends Controller
      */
     public function show(Product $product)
     {
-        // Kita akan membuat view 'products.show'
-        // dan mengirimkan data produk yang di-klik
-        return view('products.show', compact('product'));
+        // Ambil produk serupa berdasarkan kategori yang sama, kecuali produk ini sendiri
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('products.show', compact('product', 'relatedProducts'));
     }
 }

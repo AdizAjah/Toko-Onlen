@@ -104,12 +104,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
+
+    // Rute untuk Rating
+    Route::post('/rating', [App\Http\Controllers\RatingController::class, 'store'])->name('rating.store');
 });
 
 // Rute untuk Halaman Detail Produk (Public)
-Route::get('/products/{product}', function (Product $product) {
-    return view('products.show', compact('product'));
-})->name('products.show');
+// Rute untuk Halaman Detail Produk (Public)
+use App\Http\Controllers\ProductDisplayController;
+
+Route::get('/products/{product}', [ProductDisplayController::class, 'show'])->name('products.show');
 
 // Grup Rute untuk Admin
 Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(function () {

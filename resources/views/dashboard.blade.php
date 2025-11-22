@@ -11,236 +11,210 @@
             - Menambahkan 'px-4' untuk padding horizontal di layar mobile 
         -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            
 
-            <!-- Box Konten Atas (Filter) -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <!-- 
-                    MODIFIKASI: 
-                    - Padding 'p-4' di mobile, 'sm:p-6' di layar lebih besar
-                -->
-                <div class="p-4 sm:p-6 text-gray-900">
+            <div class="lg:grid lg:grid-cols-4 lg:gap-8">
 
-                    <!-- Notifikasi Sukses (jika ada) -->
-                    @if (session('success'))
-                        <div class="mb-6 font-medium text-sm text-green-600 bg-green-100 border border-green-300 rounded-md p-4 shadow-sm">
-                            {{ session('success') }}
+                <!-- SIDEBAR (Filter) -->
+                <div class="lg:col-span-1 mb-6 lg:mb-0" x-data="{ showFilters: false }">
+                    <!-- 
+                        MODIFIKASI: 
+                        Filter dipindahkan ke sidebar (sticky di desktop)
+                        Mobile: Collapsible (Accordion)
+                    -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg sticky top-24">
+                        <div class="p-4 sm:p-6 text-gray-900">
+
+                            <!-- Header Filter (Mobile Toggle) -->
+                            <div class="flex items-center justify-between lg:block cursor-pointer lg:cursor-default" @click="showFilters = !showFilters">
+                                <h3 class="font-semibold text-lg flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                    </svg>
+                                    Filter & Kategori
+                                </h3>
+                                <!-- Icon Chevron (Mobile Only) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 lg:hidden transition-transform duration-200" :class="{'rotate-180': showFilters}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+
+                            <!-- Form Filter (Hidden on Mobile by default, visible on Desktop) -->
+                            <div :class="{'hidden': !showFilters, 'block': showFilters}" class="hidden lg:block mt-4 lg:mt-4">
+                                <form action="{{ route('dashboard') }}" method="GET" class="space-y-6">
+                                    <!-- Hidden Inputs untuk menjaga state search -->
+                                    @if($search) <input type="hidden" name="search" value="{{ $search }}"> @endif
+
+                                    <!-- Kategori (Vertical List) -->
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-700 mb-3">Kategori</h4>
+                                        <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                                            <!-- Link Semua Kategori -->
+                                            @php
+                                            $queryAll = request()->query();
+                                            unset($queryAll['category_id']);
+                                            @endphp
+                                            <a href="{{ route('dashboard', $queryAll) }}"
+                                                class="block text-sm px-2 py-1.5 rounded-md transition-colors {{ !$selectedCategory ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600' }}">
+                                                Semua Kategori
+                                            </a>
+
+                                            @foreach ($categories as $category)
+                                            <a href="{{ route('dashboard', array_merge(request()->query(), ['category_id' => $category->id])) }}"
+                                                class="block text-sm px-2 py-1.5 rounded-md transition-colors {{ $selectedCategory == $category->id ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-indigo-600' }}">
+                                                {{ $category->name }}
+                                            </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+
+                                    <hr class="border-gray-200">
+
+                                    <!-- Filter Harga -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Rentang Harga</label>
+                                        <div class="space-y-2">
+                                            <div class="relative">
+                                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-xs">Rp</span>
+                                                <input type="number" name="min_price" placeholder="Min" value="{{ $minPrice ?? '' }}"
+                                                    class="w-full pl-8 text-sm rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                            </div>
+                                            <div class="relative">
+                                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-xs">Rp</span>
+                                                <input type="number" name="max_price" placeholder="Max" value="{{ $maxPrice ?? '' }}"
+                                                    class="w-full pl-8 text-sm rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter Brand -->
+                                    @if($brands->count() > 0)
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Merek</label>
+                                        <select name="brand" class="w-full text-sm rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                                            <option value="">Semua Merek</option>
+                                            @foreach($brands as $brand)
+                                            <option value="{{ $brand }}" {{ ($selectedBrand ?? '') == $brand ? 'selected' : '' }}>{{ $brand }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    @endif
+
+                                    <!-- Buttons -->
+                                    <div class="pt-2 flex flex-col gap-2">
+                                        <x-primary-button class="w-full justify-center">
+                                            Terapkan
+                                        </x-primary-button>
+                                        <a href="{{ route('dashboard') }}" class="text-center text-sm text-gray-500 hover:text-gray-800 transition-colors">
+                                            Reset Filter
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- MAIN CONTENT (Products) -->
+                <div class="lg:col-span-3">
+
+                    <!-- Notifikasi Sukses -->
+                    @if (session('success'))
+                    <div class="mb-6 font-medium text-sm text-green-600 bg-green-100 border border-green-300 rounded-md p-4 shadow-sm flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        {{ session('success') }}
+                    </div>
                     @endif
 
-                    <!-- FORM FILTER UTAMA -->
-                    <!-- MODIFIKASI RESPONSIF: 'space-y-4 sm:space-y-6' -->
-                    <form action="{{ route('dashboard') }}" method="GET" class="space-y-4 sm:space-y-6">
-                        <!-- Bawa parameter kategori jika ada -->
-                        @if($selectedCategory)
-                            <input type="hidden" name="category_id" value="{{ $selectedCategory }}">
-                        @endif
-                        
-                        <!-- Bawa parameter search jika ada -->
-                        @if($search)
-                            <input type="hidden" name="search" value="{{ $search }}">
-                        @endif
-                        
-                        <!-- Filter Harga -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Filter Harga</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label for="min_price" class="block text-xs font-medium text-gray-600 mb-1">Min (Rp)</label>
-                                    <input type="number" name="min_price" id="min_price"
-                                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                           placeholder="0"
-                                           value="{{ $minPrice ?? '' }}">
-                                </div>
-                                <div>
-                                    <label for="max_price" class="block text-xs font-medium text-gray-600 mb-1">Max (Rp)</label>
-                                    <input type="number" name="max_price" id="max_price"
-                                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                           placeholder="1000000"
-                                           value="{{ $maxPrice ?? '' }}">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Filter Merek -->
-                        @if($brands->count() > 0)
-                        <div>
-                            <label for="brand" class="block text-sm font-medium text-gray-700 mb-2">Filter Merek</label>
-                            <select name="brand" id="brand" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                                <option value="">Semua Merek</option>
-                                @foreach($brands as $brand)
-                                    <option value="{{ $brand }}" {{ ($selectedBrand ?? '') == $brand ? 'selected' : '' }}>
-                                        {{ $brand }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @endif
-                        
-                        <!-- Tombol Submit Form -->
-                        <div class="flex items-center justify-end space-x-4">
-                            <!-- MODIFIKASI: Ganti hover:text-gray-900 menjadi hover:text-indigo-600 -->
-                            <a href="{{ route('dashboard') }}" class="text-sm text-gray-600 hover:text-indigo-600 transition-colors duration-200">
-                                Reset Filter
-                            </a>
-                            <!-- Tombol ini akan otomatis menjadi Indigo dari component primary-button -->
-                            <x-primary-button>
-                                Terapkan Filter
-                            </x-primary-button>
-                        </div>
-                    </form>
-
-                    <hr class="my-6 border-gray-200">
-
-                    <!-- Filter Kategori -->
-                    <h3 class="text-lg sm:text-xl font-semibold mb-4">Telusuri Kategori</h3>
-                    
-                    <!-- Container dengan horizontal scroll dan 2 baris yang scroll bersamaan -->
-                    <div class="relative -mx-4 sm:mx-0">
-                        <div class="overflow-x-auto px-4 sm:px-0 pb-2 scrollbar-hide">
-                            <div class="flex flex-col gap-2 w-max">
-                                <!-- Baris 1 -->
-                                <div class="flex gap-2">
-                                    <!-- Tombol "Semua Kategori" -->
-                                    @php
-                                        $queryAll = request()->query();
-                                        unset($queryAll['category_id']);
-                                        $halfCount = ceil(($categories->count() + 1) / 2);
-                                    @endphp
-                                    <a href="{{ route('dashboard', $queryAll) }}" 
-                                       class="flex-shrink-0 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm rounded-lg font-medium transition-colors duration-150 whitespace-nowrap
-                                              {{ !$selectedCategory ? 
-                                                 'bg-indigo-600 text-white shadow' : 
-                                                 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                        Semua
-                                    </a>
-
-                                    <!-- Loop Kategori Baris 1 (setengah pertama) -->
-                                    @foreach ($categories->take($halfCount - 1) as $category)
-                                        <a href="{{ route('dashboard', array_merge(request()->query(), ['category_id' => $category->id])) }}"
-                                           class="flex-shrink-0 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm rounded-lg font-medium transition-colors duration-150 whitespace-nowrap
-                                                  {{ $selectedCategory == $category->id ? 
-                                                     'bg-indigo-600 text-white shadow' : 
-                                                     'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                            {{ $category->name }}
-                                        </a>
-                                    @endforeach
-                                </div>
-
-                                <!-- Baris 2 -->
-                                <div class="flex gap-2">
-                                    <!-- Loop Kategori Baris 2 (setengah kedua) -->
-                                    @foreach ($categories->skip($halfCount - 1) as $category)
-                                        <a href="{{ route('dashboard', array_merge(request()->query(), ['category_id' => $category->id])) }}"
-                                           class="flex-shrink-0 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm rounded-lg font-medium transition-colors duration-150 whitespace-nowrap
-                                                  {{ $selectedCategory == $category->id ? 
-                                                     'bg-indigo-600 text-white shadow' : 
-                                                     'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                                            {{ $category->name }}
-                                        </a>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Gradient indicators untuk scroll -->
-                        <div class="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none hidden sm:block"></div>
-                    </div>
-                    
-                    <!-- Custom CSS untuk hide scrollbar -->
-                    <style>
-                        .scrollbar-hide::-webkit-scrollbar {
-                            display: none;
-                        }
-                        .scrollbar-hide {
-                            -ms-overflow-style: none;
-                            scrollbar-width: none;
-                        }
-                    </style>
-                </div>
-            </div>
-            
-            <!-- Judul "Produk Kami" -->
-            <h3 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">
-                @if ($selectedCategory)
-                    Menampilkan Produk: {{ $categories->find($selectedCategory)->name }}
-                @elseif ($search)
-                    Hasil Pencarian untuk: "{{ $search }}"
-                @else
-                    Semua Produk
-                @endif
-            </h3>
-
-            <!-- Grid Produk -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                @forelse ($products as $product)
-                    <!-- MODIFIKASI: Menambahkan 'transition-all duration-300 hover:shadow-xl' untuk efek dinamis -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col relative group transition-all duration-300 hover:shadow-xl">
-                        
-                        <!-- Tanda Stok Habis -->
-                        @if($product->quantity > 0)
-                            <span class="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 text-white text-[10px] px-2 py-0.5 sm:text-xs sm:px-3 sm:py-1 rounded-full uppercase font-semibold {{ $product->quantity > 10 ? 'bg-green-600' : 'bg-yellow-400 ' }}">
-                                {{ $product->quantity }} tersisa
-                            </span>
-                        @else($product->quantity <= 0)
-                            <span class="absolute top-2 right-2 sm:top-3 sm:right-3 z-20 bg-red-600 text-white text-[10px] px-2 py-0.5 sm:text-xs sm:px-3 sm:py-1 rounded-full uppercase font-semibold">
-                                Stok Habis
-                            </span>
-                        @endif
-                        
-                        <!-- Link Utama (Latar Belakang) -->
-                        <a href="{{ route('products.show', $product) }}" class="absolute inset-0 z-10" aria-label="Lihat {{ $product->name }}"></a>
-
-                        <!-- Gambar Produk -->
-                        <div class="aspect-h-1 aspect-w-1 w-full overflow-hidden">
-                            <img src="{{ $product->image_url ? Storage::url($product->image_url) : 'https://placehold.co/600x400/e2e8f0/cccccc?text=Produk' }}"
-                                 alt="{{ $product->name }}"
-                                 class="w-full h-48 object-cover object-center transition-transform duration-300 group-hover:scale-105
-                                        @if($product->quantity <= 0) opacity-60 @endif">
-                        </div>
-
-                        <!-- Detail Produk -->
-                        <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                            <!-- Kategori -->
-                            <h3 class="text-xs sm:text-sm font-medium text-indigo-600 mb-1">
-                                {{ $product->category->name ?? 'Tanpa Kategori' }}
-                            </h3>
-                            <!-- Nama Produk -->
-                            <h4 class="text-sm sm:text-md font-semibold text-gray-900 truncate">
-                                {{ $product->name }}
-                            </h4>
-                            <!-- Brand (jika ada) -->
-                            @if($product->brand)
-                                <p class="text-xs text-gray-500 mt-0.5">
-                                    {{ $product->brand }}
-                                </p>
+                    <!-- Header Section -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-800">
+                            @if ($selectedCategory)
+                            {{ $categories->find($selectedCategory)->name }}
+                            @elseif ($search)
+                            Hasil: "{{ $search }}"
+                            @else
+                            Semua Produk
                             @endif
-                            <!-- Harga -->
-                            <p class="mt-2 text-base sm:text-lg font-bold text-gray-900">
-                                Rp {{ number_format($product->price, 0, ',', '.') }}
-                            </p>
-                            
-                            <!-- TAMPILAN STOK BARU -->
-                            <!-- <p class="mt-1 sm:mt-2 text-xs font-medium {{ $product->quantity > 10 ? 'text-green-600' : 'text-yellow-600' }}">
-                                @if($product->quantity > 0)
-                                    Stok Tersisa: {{ $product->quantity }}
-                                @else
-                                    (Badge "Stok Habis" sudah menutupi ini)
-                                @endif
-                            </p> -->
-                        </div>
+                        </h3>
+                        <span class="text-sm text-gray-500">
+                            Menampilkan {{ $products->count() }} produk
+                        </span>
                     </div>
-                @empty
-                    <!-- Jika Produk Kosong -->
-                    <div class="col-span-full bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-center text-gray-500">
-                            <p>Tidak ada produk yang cocok dengan filter Anda.</p>
-                        </div>
-                    </div>
-                @endforelse
-            </div>
 
+                    <!-- Grid Produk -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                        @forelse ($products as $product)
+                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col relative group transition-all duration-300 hover:shadow-xl border border-gray-100">
+
+                            <!-- Badge Stok -->
+                            @if($product->quantity > 0)
+                            <span class="absolute top-2 right-2 z-20 text-white text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-wide {{ $product->quantity > 10 ? 'bg-green-500' : 'bg-yellow-500' }}">
+                                {{ $product->quantity <= 10 ? 'Sisa ' . $product->quantity : 'Ready' }}
+                            </span>
+                            @else
+                            <span class="absolute top-2 right-2 z-20 bg-red-500 text-white text-[10px] px-2 py-1 rounded-full uppercase font-bold tracking-wide">
+                                Habis
+                            </span>
+                            @endif
+
+                            <!-- Link Wrapper -->
+                            <a href="{{ route('products.show', $product) }}" class="absolute inset-0 z-10"></a>
+
+                            <!-- Gambar -->
+                            <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-200 relative">
+                                <img src="{{ $product->image_url ? Storage::url($product->image_url) : 'https://placehold.co/600x400/e2e8f0/cccccc?text=No+Image' }}"
+                                    alt="{{ $product->name }}"
+                                    class="w-full h-48 object-cover object-center transition-transform duration-500 group-hover:scale-110
+                                                @if($product->quantity <= 0) opacity-50 grayscale @endif">
+                            </div>
+
+                            <!-- Info Produk -->
+                            <div class="p-4 flex flex-col flex-grow">
+                                <div class="mb-1">
+                                    <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">
+                                        {{ $product->category->name ?? 'Umum' }}
+                                    </span>
+                                </div>
+                                <h4 class="text-sm sm:text-base font-bold text-gray-900 mb-1 line-clamp-2 leading-tight group-hover:text-indigo-700 transition-colors">
+                                    {{ $product->name }}
+                                </h4>
+                                @if($product->brand)
+                                <p class="text-xs text-gray-500 mb-2">{{ $product->brand }}</p>
+                                @endif
+
+                                <div class="mt-auto pt-2 flex items-center justify-between">
+                                    <p class="text-lg font-extrabold text-gray-900">
+                                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    </p>
+                                    <!-- Icon Cart Kecil (Visual Only) -->
+                                    <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="col-span-full bg-white rounded-lg shadow-sm p-12 text-center border border-dashed border-gray-300">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada produk ditemukan</h3>
+                            <p class="mt-1 text-sm text-gray-500">Coba sesuaikan filter atau kata kunci pencarian Anda.</p>
+                            <div class="mt-6">
+                                <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Reset Semua Filter
+                                </a>
+                            </div>
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </x-app-layout>
